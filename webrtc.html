@@ -1,0 +1,127 @@
+<video id="player" preload=auto controls autoplay hidden></video>
+
+<canvas id="snapshot" crossOrigin = "Anonymous" ></canvas>
+<img id='picture' hidden crossOrigin = "Anonymous"/>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.3.0.min.js"></script>
+<button id="capture">Capture</button>
+<button id="upload" hidden>上傳</button>
+<link href="test.css" rel="stylesheet">
+<script>
+  var player = document.getElementById('player'); 
+  var snapshotCanvas = document.getElementById('snapshot');
+  var captureButton = document.getElementById('capture');
+  var context = snapshot.getContext('2d');
+  var end = document.getElementById('picture');
+  var flag=0;
+  var handleSuccess = function(stream) {
+    // Attach the video stream to the video element and autoplay.
+    player.srcObject = stream;
+  };
+  
+
+  
+  function startAnimation() {
+  
+  requestAnimationFrame(animation);
+  function animation(t) {
+    
+    
+    if(flag!=1) {
+      context.drawImage(player, 0, 0, snapshotCanvas.width, 
+        snapshotCanvas.height);
+        context.clearRect(45,45,60,60);
+
+      requestAnimationFrame(animation);
+    } 
+  }
+}
+startAnimation();
+  
+  captureButton.addEventListener('click', function() {
+    flag=1;
+    // Draw the video frame to the canvas.
+
+    context.drawImage(player, 0, 0,snapshotCanvas.width, 
+        snapshotCanvas.height);
+    
+      
+    end.src= snapshotCanvas.toDataURL("image/png",1.0);
+    
+
+    snapshotCanvas.hidden=true;
+    end.hidden=false;
+    document.getElementById('upload').hidden=false;
+    
+
+    
+
+    
+  });
+
+  navigator.mediaDevices.getUserMedia({video: {facingMode: { exact: "user"},width:{min:640},height:{min:480}}})
+      .then(handleSuccess);
+  document.getElementById('upload').addEventListener('click',function(){
+      var albumBucketName = "hahahu";
+      var bucketRegion = "us-east-1";
+      var IdentityPoolId = "us-east-1:f28d58ec-938b-400c-be48-9c8ad1774555";
+
+      AWS.config.region = 'us-east-1'; // 區域
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: 'us-east-1:f28d58ec-938b-400c-be48-9c8ad1774555',
+      });
+
+
+
+      var s3 = new AWS.S3({
+        apiVersion: "2006-03-01",
+        params: { Bucket: albumBucketName }
+      });
+      var albumName='test';
+      
+      addPhoto(albumName);
+      function addPhoto(albumName) {
+        var file = end.src;
+        function dataURItoBlob(dataURI) {
+         var byteString;
+          if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+        else
+        byteString = unescape(dataURI.split(',')[1]);
+
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], {type:mimeString});
+}
+var blob=dataURItoBlob(file);
+        
+        var fileName = 'test.png';
+        var albumPhotosKey = encodeURIComponent(albumName)+"/";
+
+        var photoKey =  fileName;
+
+        var upload = new AWS.S3.ManagedUpload({
+          params: {
+            Bucket: albumBucketName,
+            Key: photoKey,
+            Body: blob,
+            ACL: "public-read",
+            
+          }
+        });
+        
+        upload.send(function (err, data) {
+          if (err) console.log("Error:", err, err.code, err.message);
+          else console.log(data);
+        });
+      }
+       
+        
+      });
+      
+  
+</script>
