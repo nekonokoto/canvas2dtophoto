@@ -61,13 +61,13 @@ startAnimation();
   navigator.mediaDevices.getUserMedia({video: {facingMode: { exact: "user"},width:{min:640},height:{min:480}}})
       .then(handleSuccess);
   document.getElementById('upload').addEventListener('click',function(){
-      var albumBucketName = "hahahu";
+      var albumBucketName = "bucket";
       var bucketRegion = "us-east-1";
-      var IdentityPoolId = "us-east-1:f28d58ec-938b-400c-be48-9c8ad1774555";
+      var IdentityPoolId = "id";
 
       AWS.config.region = 'us-east-1'; // 區域
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: 'us-east-1:f28d58ec-938b-400c-be48-9c8ad1774555',
+        IdentityPoolId: 'id',
       });
 
 
